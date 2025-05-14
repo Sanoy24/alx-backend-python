@@ -5,11 +5,6 @@ from mysql.connector import errorcode
 import csv
 import uuid
 
-# DB_HOST=localhost
-# DB_USER=root
-# DB_PASSWORD=sanoy
-# DB_NAME=ALX_prodev
-
 load_dotenv()
 
 DB_HOST = os.getenv("DB_HOST")
