@@ -2,6 +2,7 @@ import mysql.connector
 import os
 from dotenv import load_dotenv
 from itertools import islice
+from utils.db_utils import get_connection
 
 load_dotenv()
 
@@ -9,12 +10,7 @@ load_dotenv()
 def stream_users():
     """Generator that yields users one by one from the user_data table"""
     try:
-        conn = mysql.connector.connect(
-            host=os.getenv("DB_HOST"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            database="ALX_prodev",
-        )
+        conn = get_connection()
         cursor = conn.cursor(dictionary=True)
 
         cursor.execute("SELECT * FROM user_data")

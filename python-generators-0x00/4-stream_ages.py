@@ -1,6 +1,7 @@
 import mysql.connector
 import os
 from dotenv import load_dotenv
+from utils.db_utils import get_connection
 
 load_dotenv()
 
@@ -8,12 +9,7 @@ load_dotenv()
 def stream_user_ages():
     """Generator that yields user ages one by one from the user_data table."""
     try:
-        conn = mysql.connector.connect(
-            host=os.getenv("DB_HOST"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            database="ALX_prodev",
-        )
+        conn = get_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT age FROM user_data")
 

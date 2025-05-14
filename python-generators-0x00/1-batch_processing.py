@@ -3,21 +3,21 @@
 import mysql.connector
 import os
 from dotenv import load_dotenv
+from utils.db_utils import get_connection
+import logging
 
-load_dotenv()
-
-DB_HOST = os.getenv("DB_HOST")
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-DB_NAME = os.getenv("DB_NAME")
+# Set up logging for the application
+logging.basicConfig(
+    level=logging.INFO,  # Set log level (DEBUG, INFO, WARNING, ERROR)
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 
 def connect_to_prodev():
     """Connects to the ALX_prodev database in MySQL."""
     try:
-        connection = mysql.connector.connect(
-            host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_NAME
-        )
+        connection = get_connection()
         if connection.is_connected():
             # print("Successfully connected to ALX_prodev database")
             return connection
@@ -101,8 +101,8 @@ def batch_processing(batch_size: int):
     )
 
 
-# if __name__ == "__main__":
-#     print("Attempting to process users with current DB credentials...")
-#     # Set a batch size for processing
-#     users_batch_size = 10  # You can change this value
-#     batch_processing(users_batch_size)
+if __name__ == "__main__":
+    print("Attempting to process users with current DB credentials...")
+    # Set a batch size for processing
+    users_batch_size = 10  # You can change this value
+    batch_processing(users_batch_size)
