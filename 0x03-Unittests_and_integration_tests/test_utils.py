@@ -62,28 +62,28 @@ class TestGetJson(unittest.TestCase):
 
 
 class TestMemoize(unittest.TestCase):
-    def test_memoize(self):
-        """Test that memoize caches the result of a method"""
+    """Test case for the memoize decorator function."""
+
+    def test_memoize(self) -> None:
+        """Test that memoize caches the result of a method."""
 
         class TestClass:
-            def a_method(self):
+            """Class with a method and memoized property."""
+
+            def a_method(self) -> int:
+                """Return a constant integer."""
                 return 42
 
             @memoize
-            def a_property(self):
+            def a_property(self) -> int:
+                """Call a_method and cache its result."""
                 return self.a_method()
 
-        with patch.object(TestClass, "a_method", return_value=42) as mocked_method:
-            instance = TestClass()
+        with patch.object(TestClass, "a_method", return_value=42) as mocked:
+            obj = TestClass()
+            result1 = obj.a_property
+            result2 = obj.a_property
 
-            # First call: should call a_method
-            result1 = instance.a_property
-            # Second call: should use cached result
-            result2 = instance.a_property
-
-            # Assert the return values are correct
             self.assertEqual(result1, 42)
             self.assertEqual(result2, 42)
-
-            # a_method should have been called only once due to memoization
-            mocked_method.assert_called_once()
+            mocked.assert_called_once()
