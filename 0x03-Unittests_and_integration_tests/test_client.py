@@ -31,19 +31,17 @@ class TestGithubOrgClient(unittest.TestCase):
         mock_get_json.assert_called_once_with(url)
 
     def test_public_repos_url(self):
-        """Test that _public_repos_url returns
-        the correct URL from mocked org"""
+        """Test that _public_repos_url returns the correct value"""
         expected_url = "https://api.github.com/orgs/my-org/repos"
 
-        with patch.object(
-            GithubOrgClient, "org", new_callable=PropertyMock
+        with patch(
+            "client.GithubOrgClient.org",
+            new_callable=PropertyMock,
         ) as mock_org:
             mock_org.return_value = {"repos_url": expected_url}
 
             client = GithubOrgClient("my-org")
-            result = client._public_repos_url
-
-            self.assertEqual(result, expected_url)
+            self.assertEqual(client._public_repos_url, expected_url)
 
 
 if __name__ == "__main__":
