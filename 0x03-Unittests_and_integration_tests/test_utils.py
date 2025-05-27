@@ -5,7 +5,7 @@ import unittest
 from parameterized import parameterized
 from typing import Any, Mapping, Sequence, Dict
 from unittest.mock import patch, Mock
-from utils import access_nested_map, get_json, memoize
+from utils import access_nested_map, get_json, memoize, GithubOrgClient
 
 
 class TestAccessNestedMap(unittest.TestCase):
