@@ -4,7 +4,8 @@
 import unittest
 from unittest.mock import patch
 from parameterized import parameterized
-from utils import GithubOrgClient
+from client import GithubOrgClient
+from typing import Dict, List
 
 
 class TestGithubOrgClient(unittest.TestCase):
