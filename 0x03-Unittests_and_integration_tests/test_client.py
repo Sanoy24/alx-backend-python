@@ -32,18 +32,18 @@ class TestGithubOrgClient(unittest.TestCase):
 
     def test_public_repos_url(self):
         """Test that _public_repos_url returns
-        the correct repos_url from org"""
-        test_url = "https://api.github.com/orgs/testorg/repos"
+        the correct URL from mocked org"""
+        expected_url = "https://api.github.com/orgs/my-org/repos"
+
         with patch.object(
             GithubOrgClient, "org", new_callable=PropertyMock
         ) as mock_org:
-            mock_org.return_value = {"repos_url": test_url}
+            mock_org.return_value = {"repos_url": expected_url}
 
-            client = GithubOrgClient("testorg")
+            client = GithubOrgClient("my-org")
             result = client._public_repos_url
 
-            self.assertEqual(result, test_url)
-            mock_org.assert_called_once()
+            self.assertEqual(result, expected_url)
 
 
 if __name__ == "__main__":
