@@ -36,7 +36,6 @@ class GithubOrgClient:
         """Memoize repos payload"""
         return get_json(self._public_repos_url)
 
-    @memoize
     def public_repos(self, license: str = None) -> List[str]:
         """Public repos"""
         json_payload = self.repos_payload

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """A module for testing the client module."""
 import unittest
-from typing import Dict
+from typing import Dict, List
 from unittest.mock import (
     MagicMock,
     Mock,
@@ -35,19 +35,21 @@ class TestGithubOrgClient(unittest.TestCase):
         url = f"https://api.github.com/orgs/{org}"
         mocked_fxn.assert_called_once_with(url)
 
-    def test_public_repos_url(self) -> None:
-        """Tests the `_public_repos_url` property."""
+    def test_public_repos_url(self):
+        """Test that _public_repos_url
+        eturns the correct repos_url"""
+        expected_url = "https://api.github.com/orgs/test-org/repos"
+
         with patch(
             "client.GithubOrgClient.org",
             new_callable=PropertyMock,
         ) as mock_org:
-            mock_org.return_value = {
-                "repos_url": "https://api.github.com/users/google/repos",
-            }
-            self.assertEqual(
-                GithubOrgClient("google")._public_repos_url,
-                "https://api.github.com/users/google/repos",
-            )
+            mock_org.return_value = {"repos_url": expected_url}
+
+            client = GithubOrgClient("test-org")
+            result = client._public_repos_url
+
+            self.assertEqual(result, expected_url)
 
     @patch("client.get_json")
     def test_public_repos(self, mock_get_json: MagicMock) -> None:
@@ -165,3 +167,7 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
     def tearDownClass(cls) -> None:
         """Removes the class fixtures after running all tests."""
         cls.get_patcher.stop()
+
+
+if __name__ == "__main__":
+    unittest.main()
