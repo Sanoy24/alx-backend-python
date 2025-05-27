@@ -2,6 +2,7 @@
 """Generic utilities for github org client."""
 import requests
 from functools import wraps
+import unittest
 from typing import (
     Mapping,
     Sequence,

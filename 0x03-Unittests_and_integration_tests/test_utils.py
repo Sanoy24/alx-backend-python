@@ -5,7 +5,7 @@ import unittest
 from parameterized import parameterized
 from typing import Any, Mapping, Sequence, Dict
 from unittest.mock import patch, Mock
-from utils import access_nested_map, get_json
+from utils import access_nested_map, get_json, memoize
 
 
 class TestAccessNestedMap(unittest.TestCase):
@@ -88,3 +88,7 @@ class TestMemoize(unittest.TestCase):
             self.assertEqual(result1, 42)
             self.assertEqual(result2, 42)
             mocked.assert_called_once()
+
+
+if __name__ == "__main__":
+    unittest.main()
