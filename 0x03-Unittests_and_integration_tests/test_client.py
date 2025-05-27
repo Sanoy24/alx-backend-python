@@ -133,7 +133,8 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         with patch.object(
             GithubOrgClient, "_public_repos_url", new_callable=PropertyMock
         ) as mock_url:
-            mock_url.return_value = "https://api.github.com/orgs/test-org/repos"
+            url = "https://api.github.com/orgs/test-org/repos"
+            mock_url.return_value = url
 
             client = GithubOrgClient("test-org")
             repos = client.public_repos()
