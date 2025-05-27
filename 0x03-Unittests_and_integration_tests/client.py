@@ -12,6 +12,7 @@ from utils import (
 )
 
 
+@memoize
 class GithubOrgClient:
     """A Githib org client"""
 
