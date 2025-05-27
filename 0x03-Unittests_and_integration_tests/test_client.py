@@ -24,25 +24,22 @@ class TestGithubOrgClient(unittest.TestCase):
             ("abc", {"login": "abc"}),
         ]
     )
-    @patch(
-        "client.get_json",
-    )
-    def test_org(self, org: str, resp: Dict, mocked_fxn: MagicMock) -> None:
+    @patch("client.get_json")
+    def test_org(self, org: str, resp: Dict, mock_get_json: MagicMock) -> None:
         """Tests the `org` method."""
-        mocked_fxn.return_value = MagicMock(return_value=resp)
+        mock_get_json.return_value = resp
         gh_org_client = GithubOrgClient(org)
-        self.assertEqual(gh_org_client.org(), resp)
+        self.assertEqual(gh_org_client.org, resp)
         url = f"https://api.github.com/orgs/{org}"
-        mocked_fxn.assert_called_once_with(url)
+        mock_get_json.assert_called_once_with(url)
 
     def test_public_repos_url(self):
-        """Test that _public_repos_url
-        eturns the correct repos_url"""
+        """Test that _public_repos_url returns
+        the correct URL from mocked org"""
         expected_url = "https://api.github.com/orgs/test-org/repos"
 
-        with patch(
-            "client.GithubOrgClient.org",
-            new_callable=PropertyMock,
+        with patch.object(
+            GithubOrgClient, "org", new_callable=PropertyMock
         ) as mock_org:
             mock_org.return_value = {"repos_url": expected_url}
 
@@ -54,58 +51,32 @@ class TestGithubOrgClient(unittest.TestCase):
     @patch("client.get_json")
     def test_public_repos(self, mock_get_json: MagicMock) -> None:
         """Tests the `public_repos` method."""
-        test_payload = {
-            "repos_url": "https://api.github.com/users/google/repos",
-            "repos": [
-                {
-                    "id": 7697149,
-                    "name": "episodes.dart",
-                    "private": False,
-                    "owner": {
-                        "login": "google",
-                        "id": 1342004,
-                    },
-                    "fork": False,
-                    "url": "https://api.github.com/repos/google/episodes.dart",
-                    "created_at": "2013-01-19T00:31:37Z",
-                    "updated_at": "2019-09-23T11:53:58Z",
-                    "has_issues": True,
-                    "forks": 22,
-                    "default_branch": "master",
-                },
-                {
-                    "id": 8566972,
-                    "name": "kratu",
-                    "private": False,
-                    "owner": {
-                        "login": "google",
-                        "id": 1342004,
-                    },
-                    "fork": False,
-                    "url": "https://api.github.com/repos/google/kratu",
-                    "created_at": "2013-03-04T22:52:33Z",
-                    "updated_at": "2019-11-15T22:22:16Z",
-                    "has_issues": True,
-                    "forks": 32,
-                    "default_branch": "master",
-                },
-            ],
-        }
-        mock_get_json.return_value = test_payload["repos"]
-        with patch(
-            "client.GithubOrgClient._public_repos_url",
-            new_callable=PropertyMock,
-        ) as mock_public_repos_url:
-            mock_public_repos_url.return_value = test_payload["repos_url"]
-            self.assertEqual(
-                GithubOrgClient("google").public_repos(),
-                [
-                    "episodes.dart",
-                    "kratu",
-                ],
-            )
-            mock_public_repos_url.assert_called_once()
-        mock_get_json.assert_called_once()
+        test_payload = [
+            {
+                "id": 1,
+                "name": "repo1",
+                "license": {"key": "apache-2.0"},
+            },
+            {
+                "id": 2,
+                "name": "repo2",
+                "license": {"key": "mit"},
+            },
+        ]
+        mock_get_json.return_value = test_payload
+
+        with patch.object(
+            GithubOrgClient, "_public_repos_url", new_callable=PropertyMock
+        ) as mock_repos_url:
+            url = "https://api.github.com/orgs/test-org/repos"
+            mock_repos_url.return_value = url
+
+            client = GithubOrgClient("test-org")
+            result = client.public_repos()
+
+            self.assertEqual(result, ["repo1", "repo2"])
+            mock_get_json.assert_called_once()
+            mock_repos_url.assert_called_once()
 
     @parameterized.expand(
         [
@@ -116,8 +87,7 @@ class TestGithubOrgClient(unittest.TestCase):
     def test_has_license(self, repo: Dict, key: str, expected: bool) -> None:
         """Tests the `has_license` method."""
         gh_org_client = GithubOrgClient("google")
-        client_has_licence = gh_org_client.has_license(repo, key)
-        self.assertEqual(client_has_licence, expected)
+        self.assertEqual(gh_org_client.has_license(repo, key), expected)
 
 
 @parameterized_class(
@@ -142,9 +112,7 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         }
 
         def get_payload(url):
-            if url in route_payload:
-                return Mock(**{"json.return_value": route_payload[url]})
-            return HTTPError
+            return Mock(**{"json.return_value": route_payload[url]})
 
         cls.get_patcher = patch("requests.get", side_effect=get_payload)
         cls.get_patcher.start()
