@@ -10,7 +10,7 @@ class User(AbstractUser):
     user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=20, blank=True)
-    password = models.CharField(min=8, null=False, blank=False)
+    password = models.TextField(null=False, blank=False)
 
     REQUIRED_FIELDS = ["first_name", "last_name"]
 
@@ -29,6 +29,9 @@ class Conversation(models.Model):
         return f"Conversation {self.conversation_id}"
 
 
+# ["message_body", "sent_at"]
+
+
 class Message(models.Model):
     message_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     sender = models.ForeignKey(
@@ -37,8 +40,8 @@ class Message(models.Model):
     conversation = models.ForeignKey(
         Conversation, on_delete=models.CASCADE, related_name="messages"
     )
-    content = models.TextField()
-    timestamp = models.DateTimeField(auto_now_add=True)
+    message_body = models.TextField()
+    sent_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
 
     def __str__(self):
