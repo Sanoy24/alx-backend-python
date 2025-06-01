@@ -1,28 +1,27 @@
-from django.shortcuts import render
-from rest_framework.views import APIView
-from rest_framework import permissions, authentication
-from rest_framework.response import Response
-
-# Create your views here.
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+from .models import Conversation, Message
+from .serializers import ConversationSerializer, MessageSerializer
 
 
-class ListUsers(APIView):
-    """
-    View to list all users in the system.
+class ConversationViewSet(viewsets.ModelViewSet):
+    queryset = Conversation.objects.all().prefetch_related("participants", "messages")
+    serializer_class = ConversationSerializer
+    permission_classes = [IsAuthenticated]
 
-    * Requires token authentication.
-    * Only admin users are able to access this view.
-    """
+    def get_queryset(self):
+        user = self.request.user
+        return self.queryset.filter(participants=user)
 
-    # authentication_classes = [authentication.TokenAuthentication]
-    # permission_classes = [permissions.IsAdminUser]
 
-    def get(self, request, format=None):
-        """
-        Return a list of all users.
-        """
-        usernames = [user.username for user in User.objects.all()]
-        return Response(usernames)
-    
-    def post(self,request,format=None):
-        
+class MessageViewSet(viewsets.ModelViewSet):
+    queryset = Conversation.objects.all().prefetch_related("sender", "conversation")
+    serializer_class = MessageSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return self.queryset.filter(conversation__participants=user)
+
+    def perform_create(self, serializer):
+        serializer.save(sender=self.request.user)
