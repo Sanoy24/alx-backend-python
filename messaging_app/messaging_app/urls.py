@@ -15,10 +15,13 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+# messaging_app/urls.py
+
 from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/", include("chats.urls")),
+    path("api/", include("chats.urls")),  # ✅ your app routes
+    path("api-auth/", include("rest_framework.urls")),  # ✅ DRF login/logout views
 ]
