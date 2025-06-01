@@ -70,7 +70,7 @@ class ConversationSerializer(serializers.ModelSerializer):
     participant_ids = serializers.ListField(
         child=serializers.UUIDField(), write_only=True, required=True
     )
-    messages = MessageSerializer(many=True, read_only=True)
+    messages = serializers.SerializerMethodField()
 
     class Meta:
         model = Conversation
@@ -83,11 +83,6 @@ class ConversationSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["conversation_id", "created_at"]
 
-    def create(self, validated_data):
-        participant_ids = validated_data.pop("participant_ids")
-        conversation = Conversation.objects.create()
-        users = User.objects.filter(user_id__in=participant_ids)
-        if users.count() != len(participant_ids):
-            raise serializers.ValidationError("One or more users not found.")
-        conversation.participants.set(users)
-        return conversation
+    def get_messages(self, obj):
+        messages = obj.messages.order_by("-sent_at")  # Customize as needed
+        return MessageSerializer(messages, many=True).data
