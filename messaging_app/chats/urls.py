@@ -3,6 +3,7 @@
 from rest_framework_nested.routers import DefaultRouter, NestedDefaultRouter
 from django.urls import path, include
 from .views import ConversationViewSet, MessageViewSet
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 # Base router
 router = DefaultRouter()
@@ -19,5 +20,7 @@ conversation_router.register(
 urlpatterns = [
     path("", include(router.urls)),
     path("", include(conversation_router.urls)),
+    path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
 ]
 1
