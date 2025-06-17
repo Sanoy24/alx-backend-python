@@ -23,23 +23,22 @@ class ConversationViewSet(viewsets.ModelViewSet):
 
 
 class MessageViewSet(viewsets.ModelViewSet):
-    queryset = Message.objects.all().select_related("sender", "conversation")
     serializer_class = MessageSerializer
     permission_classes = [IsAuthenticated, IsParticipantOfConversation]
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ["message_body"]
-    ordering_fields = ["sent_at"]
 
     def get_queryset(self):
         user = self.request.user
-        queryset = self.queryset.filter(conversation__participants=user)
+        return Message.objects.filter(
+            conversation__sender=user
+        ) | Message.objects.filter(conversation__receiver=user)
 
-        # Optional filtering by conversation ID
-        conversation_id = self.request.query_params.get("conversation")
-        if conversation_id:
-            queryset = queryset.filter(conversation__conversation_id=conversation_id)
-
-        return queryset
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if not IsParticipantOfConversation().has_object_permission(
+            request, self, instance
+        ):
+            return Response({"detail": "Forbidden"}, status=status.HTTP_403_FORBIDDEN)
+        return super().retrieve(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         serializer.save(sender=self.request.user)
