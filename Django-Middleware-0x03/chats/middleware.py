@@ -163,3 +163,24 @@ class OffensiveLanguageMiddleware:
             self.message_timestamps[ip_address].append(now)
         response = self.get_response(request)
         return response
+
+
+class RolepermissionMiddleware:
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if not request.user.is_authenticated:
+            return HttpResponseForbidden("You must be logged in to access this action.")
+        # Check if user is admin (is_staff) or in Moderators group
+        if not (
+            request.user.is_staff
+            or request.user.groups.filter(name="Moderators").exists()
+        ):
+            return HttpResponseForbidden(
+                "Only admins or moderators can access this action."
+            )
+
+        response = self.get_response(request)
+        return response
