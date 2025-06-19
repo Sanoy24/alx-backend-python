@@ -1,6 +1,7 @@
-from datetime import datetime
+from django.http import HttpResponseForbidden, HttpResponse
+from datetime import datetime, timedelta
 from django.utils import timezone
-from django.http import HttpResponseForbidden
+from collections import deque
 import logging
 
 # --- Logging Configuration ---
@@ -126,4 +127,39 @@ class RestrictAccessByTimeMiddleware:
                 )
         response = self.get_response(request)
 
+        return response
+
+
+class OffensiveLanguageMiddleware:
+
+    message_timestamp = {}
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if request.method == "POST" and request.path.startswith("/chat/"):
+            ip_address = request.META.get(
+                "HTTP_X_FORWARDED_FOR", request.META.get("REMOTE_ADDR")
+            )
+            if ip_address:
+                ip_address = ip_address.split(",")[0].strip()
+            if ip_address not in self.message_timestamp:
+                self.message_timestamp[ip_address] = deque()
+            now = timezone.now()
+            one_minute_ago = now - timedelta(minutes=1)
+            while (
+                self.message_timestamp[ip_address]
+                and self.message_timestamp[ip_address][0] < one_minute_ago
+            ):
+                self.message_timestamp[ip_address].popleft()
+
+            if len(self.message_timestamps[ip_address]) >= 5:
+                return HttpResponse(
+                    "Rate limit exceeded: 5 messages per minute allowed.", status=429
+                )
+
+            # Record the current message timestamp
+            self.message_timestamps[ip_address].append(now)
+        response = self.get_response(request)
         return response
