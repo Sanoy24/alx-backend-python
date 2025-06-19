@@ -1,4 +1,6 @@
 from datetime import datetime
+from django.utils import timezone
+from django.http import HttpResponseForbidden
 import logging
 
 # --- Logging Configuration ---
@@ -103,4 +105,25 @@ class RequestLoggingMiddleware:
         # has been generated, this middleware returns that response.
         # This allows other middleware further up the chain (or the web server)
         # to continue processing or send the response back to the client.
+        return response
+
+
+class RestrictAccessByTimeMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        now = timezone.now().time()
+        start_time = datetime.strptime("21:00", "%H:%M")  # 09:00
+        end_time = datetime.strptime("18:00", "%H:%M")  # 06:00
+        logging.info(f"cuurent time: {now}")
+
+        if request.path.startswith("/chats/"):
+
+            if not (now >= start_time or now <= end_time):
+                return HttpResponseForbidden(
+                    "Access to the messaging app is restricted outside 9:00 PM to 6:00 PM."
+                )
+        response = self.get_response(request)
+
         return response
